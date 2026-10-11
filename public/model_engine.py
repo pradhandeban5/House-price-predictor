@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
+import pickle
 import tempfile
 from pathlib import Path
 from typing import Any, Sequence
@@ -19,22 +21,13 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 MODEL_DIR = Path(__file__).resolve().parent / "models"
 MODEL_PATH = MODEL_DIR / "pipeline.joblib"
-MODEL_FORMAT_VERSION = 1
-
-
-def _categorical_strings(values: np.ndarray) -> np.ndarray:
-    """Give mixed Excel object columns one consistent representation."""
-    values = np.asarray(values, dtype=object)
-    missing = pd.isna(values)
-    normalized = values.astype(object, copy=True)
-    normalized[~missing] = values[~missing].astype(str)
-    normalized[missing] = np.nan
-    return normalized
+MODEL_FORMAT_VERSION = 2
+LOGGER = logging.getLogger(__name__)
 
 
 def build_pipeline(
@@ -58,12 +51,6 @@ def build_pipeline(
     if categorical_features:
         categorical_pipeline = Pipeline(
             steps=[
-                (
-                    "stringify",
-                    FunctionTransformer(
-                        _categorical_strings, feature_names_out="one-to-one"
-                    ),
-                ),
                 ("imputer", SimpleImputer(strategy="most_frequent")),
                 ("onehot", OneHotEncoder(handle_unknown="ignore")),
             ]
@@ -203,6 +190,10 @@ def train_and_evaluate(
     empty_features = [feature for feature in selected if cleaned[feature].isna().all()]
     if empty_features:
         raise ValueError(f"Selected features contain no usable values: {empty_features}.")
+    for feature in categorical_features:
+        cleaned[feature] = cleaned[feature].astype(object)
+        non_missing = cleaned[feature].notna()
+        cleaned.loc[non_missing, feature] = cleaned.loc[non_missing, feature].astype(str)
 
     validation_rows = max(2, int(np.ceil(len(cleaned) * test_size)))
     if len(cleaned) - validation_rows < 2:
@@ -281,10 +272,55 @@ def save_model(bundle: dict[str, Any], cache_key: str, path: Path = MODEL_PATH) 
 
 
 def load_model(path: Path = MODEL_PATH) -> dict[str, Any] | None:
-    """Load the persisted payload when available, otherwise return ``None``."""
+    """Load a compatible model; report unusable cached artifacts for retraining."""
     if not path.exists():
         return None
-    payload = joblib.load(path)
+    try:
+        payload = joblib.load(path)
+    except (
+        AttributeError,
+        EOFError,
+        ImportError,
+        IndexError,
+        KeyError,
+        OSError,
+        pickle.UnpicklingError,
+        ValueError,
+    ) as exc:
+        LOGGER.warning(
+            "Ignoring unreadable model cache at %s; the application will retrain it: %s",
+            path,
+            exc,
+        )
+        return None
+    if not isinstance(payload, dict):
+        LOGGER.warning(
+            "Ignoring invalid model cache at %s; the application will retrain it.",
+            path,
+        )
+        return None
     if payload.get("format_version") != MODEL_FORMAT_VERSION:
+        LOGGER.info(
+            "Ignoring model cache at %s because its format version is outdated.",
+            path,
+        )
+        return None
+    bundle = payload.get("bundle")
+    required_bundle_keys = {
+        "pipeline",
+        "metrics",
+        "features",
+        "numeric_features",
+        "categorical_features",
+    }
+    if (
+        not isinstance(payload.get("cache_key"), str)
+        or not isinstance(bundle, dict)
+        or not required_bundle_keys.issubset(bundle)
+    ):
+        LOGGER.warning(
+            "Ignoring incomplete model cache at %s; the application will retrain it.",
+            path,
+        )
         return None
     return payload
