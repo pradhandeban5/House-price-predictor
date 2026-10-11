@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --ink: #202a35;
+    --muted: #75808d;
+    --canvas: #f3f5f7;
+    --line: rgba(31, 47, 62, 0.09);
+    --teal: #087f79;
+}
+
+html, body, [class*="css"] {
+    font-family: 'DM Sans', sans-serif;
+}
+
+.stApp {
+    color: var(--ink);
+    background:
+        radial-gradient(ellipse at 88% 0%, rgba(8, 127, 121, 0.09), transparent 34rem),
+        var(--canvas);
+}
+
+.block-container {
+    max-width: 1120px;
+    padding: 2.5rem 3rem 4rem;
+}
+
+[data-testid="stSidebar"] {
+    display: none;
+}
+
+h1, h2, h3 {
+    font-family: 'Manrope', sans-serif;
+    letter-spacing: -0.035em;
+}
+
+h1 {
+    font-size: clamp(2.3rem, 5vw, 4rem) !important;
+    line-height: 1.08 !important;
+    font-weight: 800 !important;
+    margin: 0.6rem 0 0 !important;
+}
+
+h3 {
+    font-size: 1.28rem !important;
+    font-weight: 750 !important;
+    margin-bottom: 0.1rem !important;
+}
+
+.hero-kicker {
+    color: var(--teal);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.hero-subtitle {
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin: 0.8rem 0 2rem;
+    max-width: 42rem;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 12px 36px rgba(34, 49, 62, 0.045);
+    margin: 1rem 0;
+    padding: 1.15rem 1.3rem;
+}
+
+[data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+[data-testid="stCaptionContainer"] p {
+    color: var(--muted);
+    font-size: 0.77rem;
+    line-height: 1.45;
+}
+
+[data-baseweb="select"] > div {
+    border-color: rgba(31, 47, 62, 0.16);
+    border-radius: 10px;
+    min-height: 2.8rem;
+}
+
+.stSlider [data-baseweb="slider"] {
+    padding-top: 0.6rem;
+}
+
+.stButton > button[kind="primary"] {
+    background: linear-gradient(110deg, #087f79, #126e73);
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(10, 138, 129, 0.18);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    min-height: 3.2rem;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(110deg, #09958c, #147c82);
+    box-shadow: 0 10px 22px rgba(10, 138, 129, 0.25);
+    transform: translateY(-1px);
+}
+
+.prediction-card {
+    animation: rise-in 420ms ease-out both;
+    background:
+        radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.17), transparent 18rem),
+        linear-gradient(130deg, #087f79 0%, #116a70 56%, #245262 100%);
+    border: 0;
+    border-radius: 22px;
+    box-shadow: 0 16px 36px rgba(13, 91, 93, 0.18);
+    color: white;
+    margin-top: 1.5rem;
+    overflow: hidden;
+    padding: 1.8rem 2rem;
+}
+
+.prediction-label {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.prediction-value {
+    color: #fff;
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    font-weight: 800;
+    letter-spacing: -0.065em;
+    line-height: 1.2;
+    margin: 0.4rem 0;
+}
+
+.prediction-note {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.84rem;
+}
+
+.estimate-hint {
+    background: rgba(8, 127, 121, 0.055);
+    border: 1px dashed rgba(8, 127, 121, 0.24);
+    border-radius: 14px;
+    color: var(--muted);
+    margin-top: 1.25rem;
+    padding: 1rem 1.2rem;
+}
+
+.disclaimer {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+div[data-testid="stAlert"] {
+    border-radius: 12px;
+}
+
+@keyframes rise-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 760px) {
+    .block-container {
+        padding: 1.4rem 1rem 2.5rem;
+    }
+
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        padding: 0.8rem;
+    }
+}
